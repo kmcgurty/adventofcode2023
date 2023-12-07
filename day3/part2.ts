@@ -51,16 +51,17 @@ function getParts(map: string[][]) {
                     checkTop: row > 0 && currIsNum,
                     checkBottom: row < map.length - 2 && currIsNum,
                     checkLeft: col !== 0 && !prevCharIsNum && isNumBeginning,
-                    checkRight: col < map[row].length - 2 && isNumEnd,
+                    checkRight: col < map[row].length - 1 && isNumEnd,
                 };
+
                 const foundGear = checkForGear(row, col, map, config);
                 if (foundGear !== null) {
-                    foundGearPos = "" + foundGear.row + foundGear.col;
+                    foundGearPos = "" + foundGear.row + "|" + foundGear.col;
                 }
             }
 
             if (isNumEnd && foundGearPos) {
-                const partArray = map[row].slice(numStart, numEnd + 1);
+                const partArray = map[row].slice(numStart, numEnd);
                 const partString = partArray.join("");
                 const gearParts = gears[foundGearPos] ?? [];
                 gearParts.push(parseInt(partString));
