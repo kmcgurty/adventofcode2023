@@ -1,78 +1,42 @@
 import fs from "fs";
 import path from "path";
 
-interface ICard {
-    winCount: number;
-    copiesWon: number;
-    winningCards: string[];
-    drawnCards: string[];
-}
-
 console.log("Current directory:", __dirname);
 
 const fileData = fs.readFileSync(path.join(__dirname, "input.txt")).toString();
 const rawCards = fileData.split("\n");
 
 const cardNumbers = rawCards.map((r) => r.split(": ")[1]);
-const cards: ICard[] = cardNumbers.map((n) => {
+const copies: number[] = [];
+const wins: number[] = cardNumbers.map((n) => {
     const [rawWinningSet, rawDrawnSet] = n.split(/ \| +/);
 
     const winning = rawWinningSet.split(/ +/);
     const drawn = rawDrawnSet.split(/ +/);
 
-    return {
-        winCount: -1,
-        copiesWon: 0,
-        winningCards: winning,
-        drawnCards: drawn,
-    };
+    const countWon = getCardWinningCount(drawn, winning);
+    copies.push(1);
+    return countWon;
 });
 
-getCardsWon();
-const cardsWon = cards.reduce((total, card) => {
-    return (total += card.copiesWon + 1);
-}, 0);
-console.log("total cards won: ", cardsWon);
-
-function getCardsWon(cardIndex: number = 0, copiesToProcess: number = -1) {
-    let originalCard = false;
-    if (cards[cardIndex].winCount == -1) {
-        cards[cardIndex].winCount = getCardWinningCount(cards[cardIndex]);
-        originalCard = true;
-        increaseCopiesWon(cardIndex + 1, cards[cardIndex].winCount);
+let total = 0;
+console.log(copies);
+console.log(wins);
+for (let i = 0; i < wins.length; i++) {
+    for (let j = 1; j < wins[i] + 1; j++) {
+        if (i + j > wins.length) break;
+        copies[i + j] += copies[i];
     }
-
-    if (copiesToProcess <= 0 || cards[cardIndex].winCount == 0) {
-        cardIndex++;
-
-        if (cardIndex >= cards.length) {
-            return;
-        }
-
-        copiesToProcess = -1;
-    } else if (!originalCard) {
-        increaseCopiesWon(cardIndex + 1, cards[cardIndex].winCount);
-        copiesToProcess--;
-    }
-
-    if (copiesToProcess == -1) {
-        copiesToProcess = cards[cardIndex].copiesWon;
-    }
-
-    return getCardsWon(cardIndex, copiesToProcess);
+    total += copies[i];
 }
 
-function increaseCopiesWon(start: number, end: number) {
-    for (let i = start; i < start + end && i < cards.length; i++) {
-        cards[i].copiesWon++;
-    }
-}
+console.log(total);
 
-function getCardWinningCount(card: ICard) {
+function getCardWinningCount(drawnCards: string[], winningCards: string[]) {
     let winningCount: number = 0;
-    for (let i = 0; i < card.drawnCards.length; i++) {
-        const drawn = card.drawnCards[i];
-        const isDrawnWinning = card.winningCards.includes(drawn);
+    for (let i = 0; i < drawnCards.length; i++) {
+        const drawn = drawnCards[i];
+        const isDrawnWinning = winningCards.includes(drawn);
 
         if (isDrawnWinning) winningCount++;
     }
